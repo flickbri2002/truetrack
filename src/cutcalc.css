@@ -1,0 +1,53 @@
+/* CutCalc AI — Global dark theme override
+   Place this in src/ and import it in main.jsx */
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body, #root {
+  background: #07070f;
+  color: #ececf4;
+  font-family: 'Outfit', 'DM Sans', system-ui, sans-serif;
+  min-height: 100vh;
+}
+
+/* Force all inputs to show light text on dark background */
+input, select, textarea {
+  font-family: inherit;
+  color: #ececf4 !important;
+  background-color: #13132a !important;
+  -webkit-text-fill-color: #ececf4 !important;
+}
+
+/* Placeholder text */
+input::placeholder,
+textarea::placeholder {
+  color: #4b5563 !important;
+  -webkit-text-fill-color: #4b5563 !important;
+}
+
+/* Dropdown options */
+select option {
+  background: #13132a;
+  color: #ececf4;
+}
+
+/* Autofill override — browsers turn inputs yellow/white on autofill */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus {
+  -webkit-text-fill-color: #ececf4 !important;
+  -webkit-box-shadow: 0 0 0px 1000px #13132a inset !important;
+  transition: background-color 5000s ease-in-out 0s;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #1a1a30; border-radius: 3px; }
+
+/* Animations */
+@keyframes spin { to { transform: rotate(360deg); } }
