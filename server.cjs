@@ -1,7 +1,7 @@
 // TrueTrack — Backend Server
 // Proxies requests to the Anthropic API so the API key stays off the frontend
 // Supports text and vision (image) requests
-// Run with: node server.cjs
+// Run locally with: node server.cjs
 
 const express = require("express");
 const cors = require("cors");
@@ -12,10 +12,14 @@ app.use(cors());
 // Increase limit to 20mb to handle base64 image payloads
 app.use(express.json({ limit: "20mb" }));
 
-// ← Paste your Anthropic API key here
+// API key from environment variable (set in Railway dashboard)
+// For local dev: node server.cjs  (reads from process.env.ANTHROPIC_API_KEY)
 const API_KEY = process.env.ANTHROPIC_API_KEY || "";
 
 app.post("/api/chat", async (req, res) => {
+  if (!API_KEY) {
+    return res.status(500).json({ error: "ANTHROPIC_API_KEY not set" });
+  }
   try {
     const response = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
@@ -39,6 +43,8 @@ app.post("/api/chat", async (req, res) => {
   }
 });
 
-app.listen(3001, () => {
-  console.log("✅ TrueTrack server running on http://localhost:3001");
+// Railway injects PORT automatically — fall back to 3001 for local dev
+const PORT = process.env.PORT || 3001;
+app.listen(PORT, "0.0.0.0", () => {
+  console.log(`✅ TrueTrack server running on port ${PORT}`);
 });

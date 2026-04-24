@@ -199,7 +199,7 @@ async function callAI(prompt, sys = "You are a precision nutrition coach. Be con
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 25000);
   try {
-    const r = await fetch("http://localhost:3001/api/chat", {
+    const r = await fetch("https://truetrack-production.up.railway.app/api/chat", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       signal: controller.signal,
@@ -3133,7 +3133,7 @@ async function analyzePhoto(base64, mimeType, context) {
   try {
     let r;
     try {
-      r = await fetch("http://localhost:3001/api/chat", {
+      r = await fetch("https://truetrack-production.up.railway.app/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         signal: controller.signal,
