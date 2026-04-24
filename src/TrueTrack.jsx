@@ -227,6 +227,17 @@ async function callAIJSON(prompt) {
   return JSON.parse(cleaned.slice(s, e + 1));
 }
 
+/* Mobile detection hook */
+function useIsMobile() {
+  const [isMobile, setIsMobile] = useState(() => window.innerWidth < 768);
+  useEffect(() => {
+    const handler = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener("resize", handler);
+    return () => window.removeEventListener("resize", handler);
+  }, []);
+  return isMobile;
+}
+
 /* ════════════════════════════════════════════════════════════
    DESIGN TOKENS — Forest Green light mode
 ════════════════════════════════════════════════════════════ */
@@ -950,53 +961,85 @@ const NAV = [
 ];
 
 function AppShell({ children, page, setPage, setModal, profile, onReset, onEditProfile, modal, modalContent }) {
+  const isMobile = useIsMobile();
+  const navItems = [
+    { id: "dashboard", label: "Dashboard", icon: "home" },
+    { id: "log",       label: "Diary",     icon: "log"  },
+    { id: "meals",     label: "Meals",     icon: "meals"},
+    { id: "insights",  label: "Insights",  icon: "insights" },
+  ];
+
   return (
     <div style={{ background: T.bg, minHeight: "100vh", fontFamily: T.font, color: T.text, display: "flex", position: "relative" }}>
-      <div style={{ width: 210, minHeight: "100vh", background: T.sidebar, padding: "20px 12px", flexShrink: 0, display: "flex", flexDirection: "column" }}>
-        <div style={{ padding: "0 4px", marginBottom: 28 }}>
-          <Logo variant="dark" size="sm" />
-        </div>
-        <div style={{ flex: 1 }}>
-          {NAV.map(n => (
-            <div key={n.id} onClick={() => setPage(n.id)} style={{ display: "flex", alignItems: "center", gap: 9, padding: "8px 10px", borderRadius: 7, cursor: "pointer", marginBottom: 2, background: page === n.id ? T.sidebarAct : "transparent", color: page === n.id ? "#9de89d" : "#4a6a4a", fontWeight: page === n.id ? 600 : 400, fontSize: 13, transition: "all 0.15s" }}>
-              <Icon name={n.icon} size={15} color={page === n.id ? "#9de89d" : "#4a6a4a"} /> {n.label}
-            </div>
-          ))}
-        </div>
-        <div style={{ marginBottom: 12 }}>
-          <div onClick={() => setModal("ateout")} style={{ padding: "8px 10px", borderRadius: 7, cursor: "pointer", background: "#2a1a0a", color: "#d4905a", fontWeight: 600, fontSize: 12, display: "flex", alignItems: "center", gap: 7, marginBottom: 5 }}>
-            <Icon name="ateout" size={13} color="#d4905a" /> I ate out
-          </div>
-          <div onClick={() => setModal("planahead")} style={{ padding: "8px 10px", borderRadius: 7, cursor: "pointer", background: "#0a1a2a", color: "#6ab0da", fontWeight: 600, fontSize: 12, display: "flex", alignItems: "center", gap: 7 }}>
-            <Icon name="planahead" size={13} color="#6ab0da" /> Plan ahead
-          </div>
-        </div>
-        {profile && (
-          <div style={{ padding: "9px 10px", borderRadius: 7, background: T.sidebarAct }}>
-            <div style={{ fontSize: 12, fontWeight: 600, color: "#c8e6c8" }}>{profile.name || "My account"}</div>
-            <div style={{ color: "#4a6a4a", fontSize: 11, marginTop: 1 }}>{profile.calories} kcal target</div>
-            <div style={{ display: "flex", gap: 10, marginTop: 6 }}>
-              <div onClick={onEditProfile} style={{ color: "#6a9a6a", fontSize: 10, cursor: "pointer" }}>Edit profile</div>
-              <div style={{ color: "#2a4a2a", fontSize: 10 }}>·</div>
-              <div onClick={onReset} style={{ color: "#2a4a2a", fontSize: 10, cursor: "pointer" }}>Reset</div>
-            </div>
-          </div>
-        )}
-      </div>
 
-      <div style={{ flex: 1, padding: "32px 36px", overflowY: "auto", boxSizing: "border-box" }}>
+      {/* ── DESKTOP SIDEBAR ── */}
+      {!isMobile && (
+        <div style={{ width: 210, minHeight: "100vh", background: T.sidebar, padding: "20px 12px", flexShrink: 0, display: "flex", flexDirection: "column" }}>
+          <div style={{ marginBottom: 24 }}><Logo variant="light" size="sm" /></div>
+          <nav style={{ flex: 1 }}>
+            {navItems.map(n => (
+              <div key={n.id} onClick={() => setPage(n.id)} style={{ display: "flex", alignItems: "center", gap: 9, padding: "8px 10px", borderRadius: 7, cursor: "pointer", marginBottom: 2, background: page === n.id ? T.sidebarAct : "transparent", color: page === n.id ? "#9de89d" : "#4a6a4a", fontWeight: page === n.id ? 600 : 400, fontSize: 13, transition: "all 0.15s" }}>
+                <Icon name={n.icon} size={15} color={page === n.id ? "#9de89d" : "#4a6a4a"} />
+                {n.label}
+              </div>
+            ))}
+          </nav>
+          <div style={{ borderTop: "1px solid #2a4a2a", paddingTop: 12, marginTop: 12 }}>
+            <div style={{ padding: "9px 10px", borderRadius: 7, background: T.sidebarAct }}>
+              <div style={{ fontSize: 12, fontWeight: 600, color: "#c8e6c8", marginBottom: 1 }}>{profile?.name || "Your profile"}</div>
+              <div style={{ fontSize: 10, color: "#4a6a4a" }}>{profile?.calories} kcal target</div>
+            </div>
+            <div style={{ display: "flex", gap: 8, marginTop: 8, paddingLeft: 2 }}>
+              <button onClick={() => setModal("ateout")} style={{ flex: 1, padding: "6px 4px", borderRadius: 6, background: "#2a4a2a", border: "none", color: "#9de89d", fontSize: 10, fontWeight: 600, cursor: "pointer", fontFamily: T.font }}>I ate out</button>
+              <button onClick={() => setModal("planahead")} style={{ flex: 1, padding: "6px 4px", borderRadius: 6, background: "#2a4a2a", border: "none", color: "#9de89d", fontSize: 10, fontWeight: 600, cursor: "pointer", fontFamily: T.font }}>Plan ahead</button>
+            </div>
+            <div style={{ display: "flex", gap: 8, marginTop: 6, paddingLeft: 2 }}>
+              <button onClick={onEditProfile} style={{ fontSize: 10, color: "#4a6a4a", background: "none", border: "none", cursor: "pointer", fontFamily: T.font }}>Edit profile</button>
+              <button onClick={onReset} style={{ fontSize: 10, color: "#4a6a4a", background: "none", border: "none", cursor: "pointer", fontFamily: T.font }}>Reset</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── MAIN CONTENT ── */}
+      <div style={{ flex: 1, padding: isMobile ? "16px 14px 80px" : "28px 32px", overflowY: "auto", maxWidth: isMobile ? "100%" : "none", minWidth: 0 }}>
         {children}
       </div>
 
-      {modal && (
-        <div style={{ position: "absolute", inset: 0, background: "rgba(26,46,26,0.55)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000, padding: 20 }}>
+      {/* ── MODAL OVERLAY ── */}
+      {modal && modalContent && (
+        <div style={{ position: "fixed", inset: 0, background: "rgba(26,46,26,0.55)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 300, padding: isMobile ? 12 : 20, overflowY: "auto" }}>
           {modalContent}
+        </div>
+      )}
+
+      {/* ── MOBILE BOTTOM NAV ── */}
+      {isMobile && (
+        <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, background: T.sidebar, borderTop: "1px solid #2a4a2a", display: "flex", zIndex: 200, paddingBottom: "env(safe-area-inset-bottom, 0px)" }}>
+          {navItems.map(n => (
+            <button key={n.id} onClick={() => setPage(n.id)}
+              style={{ flex: 1, padding: "10px 4px 8px", display: "flex", flexDirection: "column", alignItems: "center", gap: 3, background: "none", border: "none", cursor: "pointer", color: page === n.id ? "#9de89d" : "#4a6a4a", fontFamily: T.font }}>
+              <Icon name={n.icon} size={20} color={page === n.id ? "#9de89d" : "#4a6a4a"} />
+              <span style={{ fontSize: 9, fontWeight: page === n.id ? 700 : 400, letterSpacing: "0.03em" }}>{n.label}</span>
+            </button>
+          ))}
+          {/* Ate out / Plan ahead as a center FAB */}
+        </div>
+      )}
+
+      {/* ── MOBILE TOP BAR ── */}
+      {isMobile && (
+        <div style={{ position: "fixed", top: 0, left: 0, right: 0, background: T.sidebar, padding: "12px 16px", display: "flex", justifyContent: "space-between", alignItems: "center", zIndex: 200, borderBottom: "1px solid #2a4a2a" }}>
+          <Logo variant="light" size="sm" />
+          <div style={{ display: "flex", gap: 8 }}>
+            <button onClick={() => setModal("ateout")} style={{ padding: "5px 10px", borderRadius: 6, background: "#2a4a2a", border: "none", color: "#9de89d", fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: T.font }}>Ate out</button>
+            <button onClick={() => setModal("planahead")} style={{ padding: "5px 10px", borderRadius: 6, background: "#2a4a2a", border: "none", color: "#9de89d", fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: T.font }}>Plan ahead</button>
+          </div>
         </div>
       )}
     </div>
   );
 }
-
 /* ════════════════════════════════════════════════════════════
    WEIGHT TIP — collapsible hint for daily weigh-in
 ════════════════════════════════════════════════════════════ */
@@ -1052,6 +1095,7 @@ function WeightTip() {
    DASHBOARD
 ════════════════════════════════════════════════════════════ */
 function Dashboard({ profile, logs, todayLog, onSave, onProfileUpdate, calAdjustment, onClearAdjustment, onApplyAdjustment }) {
+  const isMobile = useIsMobile();
   const trend = NE.weeklyTrend(logs);
   const adj = NE.adaptive(trend);
   const learned = NE.learnedTDEE(logs);
@@ -1093,7 +1137,7 @@ function Dashboard({ profile, logs, todayLog, onSave, onProfileUpdate, calAdjust
   const greeting = hr < 12 ? "Good morning" : hr < 18 ? "Good afternoon" : "Good evening";
 
   return (
-    <div>
+    <div style={{ paddingTop: isMobile ? 56 : 0 }}>
       <div style={{ marginBottom: 24 }}>
         <h1 style={{ fontSize: 22, fontWeight: 700, color: T.text, letterSpacing: "-0.3px", marginBottom: 2, fontFamily: T.serif }}>
           {greeting}{profile.name ? `, ${profile.name}` : ""}
@@ -1195,7 +1239,7 @@ function Dashboard({ profile, logs, todayLog, onSave, onProfileUpdate, calAdjust
         </div>
       )}
 
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12, marginBottom: 20 }}>
+      <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr 1fr" : "repeat(4, 1fr)", gap: isMobile ? 8 : 12, marginBottom: 20 }}>
         {/* Calorie target card — with custom targets button */}
         <Card style={{ padding: "14px 14px 12px" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
@@ -2378,6 +2422,7 @@ function PhotoScanPanel({ onAdd, onClose, targetMealKey }) {
    LOG PAGE — weight & activity at top, food diary + photo scan
 ════════════════════════════════════════════════════════════ */
 function LogPage({ profile, logs, todayLog, onSave, onApplyAdjustment }) {
+  const isMobile = useIsMobile();
   const [viewDate, setViewDate] = useState(TODAY);
   const isToday = viewDate === TODAY;
 
@@ -2610,7 +2655,7 @@ function LogPage({ profile, logs, todayLog, onSave, onApplyAdjustment }) {
    MEALS PAGE
 ════════════════════════════════════════════════════════════ */
 function MealsPage({ profile, todayLog, onAddToDiary }) {
-  const [meals, setMeals]   = useState(null);
+  const isMobile = useIsMobile();
   const [loading, setLoading] = useState(false);
   const [filter, setFilter] = useState("balanced");
   const [mode, setMode]     = useState("full");
@@ -2783,7 +2828,7 @@ Do NOT include meal keys that weren't requested.`);
 
       {meals && (
         <>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 14 }}>
+          <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: 12, marginBottom: 14 }}>
             {activeSlots.map((meal, idx) => {
               const m = meals[meal];
               if (!m) return null;
